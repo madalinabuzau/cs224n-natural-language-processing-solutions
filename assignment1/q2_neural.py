@@ -27,20 +27,37 @@ def forward_backward_prop(data, labels, params, dimensions):
     ofs = 0
     Dx, H, Dy = (dimensions[0], dimensions[1], dimensions[2])
 
-    W1 = np.reshape(params[ofs:ofs+ Dx * H], (Dx, H))
+    W1 = np.reshape(params[ofs:ofs + Dx * H], (Dx, H))
     ofs += Dx * H
     b1 = np.reshape(params[ofs:ofs + H], (1, H))
     ofs += H
     W2 = np.reshape(params[ofs:ofs + H * Dy], (H, Dy))
     ofs += H * Dy
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
-
+    
     ### YOUR CODE HERE: forward propagation
-    raise NotImplementedError
+    # Number of samples
+    N = data.shape[0]
+    # Forward input to hidden layer
+    a1 = data.dot(W1) + b1
+    s1 = sigmoid(a1)
+    # Forward hidden to output layer
+    a2 = s1.dot(W2) + b2
+    s2 = softmax(a2)
+    # Compute cross-entropy loss function
+    cost = -np.mean(np.log(s2[np.arange(N),np.argmax(labels,axis=1)]))
     ### END YOUR CODE
 
     ### YOUR CODE HERE: backward propagation
-    raise NotImplementedError
+    grad_a2 = s2
+    grad_a2[np.arange(N),np.argmax(labels,axis=1)] -= 1
+    grad_a2 /= N
+    gradW2 = s1.T.dot(grad_a2)
+    gradb2 = np.sum(grad_a2,axis=0,keepdims=True)
+    grad_s1 = grad_a2.dot(W2.T)
+    grad_a1 = grad_s1*(1-s1)*s1
+    gradW1 = data.T.dot(grad_a1)
+    gradb1 = np.sum(grad_a1,axis=0,keepdims=True)
     ### END YOUR CODE
 
     ### Stack gradients (do not modify)
@@ -86,4 +103,4 @@ def your_sanity_checks():
 
 if __name__ == "__main__":
     sanity_check()
-    your_sanity_checks()
+    #your_sanity_checks()
