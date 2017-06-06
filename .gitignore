@@ -100,6 +100,8 @@ ENV/
 # mypy
 .mypy_cache/
 
-
 # Remove collect submission
 */collect_submission.sh
+
+# Ignore downloaded datasets
+*/utils/datasets
