@@ -101,7 +101,10 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset,
     indices.extend(getNegativeSamples(target, dataset, K))
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    sampledOutputVectors = np.zeros_like(outputVectors)
+    sampledOutputVectors[indices,:] = outputVectors[indices,:]
+    cost, gradPred, grad = softmaxCostAndGradient(predicted, target, 
+                                                  sampledOutputVectors, dataset)
     ### END YOUR CODE
 
     return cost, gradPred, grad
