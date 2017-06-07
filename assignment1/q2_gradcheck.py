@@ -34,7 +34,11 @@ def gradcheck_naive(f, x):
         upper_bound[ix] += h
         lower_bound = x.copy()
         lower_bound[ix] -= h
-        numgrad = (f(upper_bound)[0]-f(lower_bound)[0])/(2*h)
+        random.setstate(rndstate)
+        f_plus = f(upper_bound)[0]
+        random.setstate(rndstate)
+        f_minus = f(lower_bound)[0]
+        numgrad = (f_plus-f_minus)/(2*h)
         ### END YOUR CODE
 
         # Compare gradients

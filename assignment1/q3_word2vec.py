@@ -139,7 +139,17 @@ def skipgram(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradOut = np.zeros(outputVectors.shape)
 
     ### YOUR CODE HERE
-    #raise NotImplementedError
+    idxCenterWord = tokens[currentWord]
+    predicted = inputVectors[idxCenterWord,:]
+
+    for word in contextWords:
+        tmpCost, tmpGradIn, tmpGradOut = word2vecCostAndGradient(predicted, 
+                                                                 tokens[word], 
+                                                                 outputVectors,
+                                                                 dataset)
+        cost += tmpCost
+        gradIn[idxCenterWord,:] += tmpGradIn
+        gradOut += tmpGradOut
     ### END YOUR CODE
 
     return cost, gradIn, gradOut
