@@ -58,7 +58,12 @@ def softmaxCostAndGradient(predicted, target, outputVectors, dataset):
     """
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    scores = softmax(predicted.dot(outputVectors.T))
+    cost = -np.log(scores[target])
+    gradSoftmax = scores.copy()
+    gradSoftmax[target] -= 1
+    grad = gradSoftmax[:,np.newaxis].dot(predicted[:,np.newaxis].T)
+    gradPred = gradSoftmax.dot(outputVectors)
     ### END YOUR CODE
 
     return cost, gradPred, grad
@@ -131,7 +136,7 @@ def skipgram(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradOut = np.zeros(outputVectors.shape)
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    #raise NotImplementedError
     ### END YOUR CODE
 
     return cost, gradIn, gradOut
@@ -155,7 +160,7 @@ def cbow(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradOut = np.zeros(outputVectors.shape)
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    #raise NotImplementedError
     ### END YOUR CODE
 
     return cost, gradIn, gradOut
@@ -239,4 +244,4 @@ def test_word2vec():
 
 if __name__ == "__main__":
     test_normalize_rows()
-    #test_word2vec()
+    test_word2vec()
