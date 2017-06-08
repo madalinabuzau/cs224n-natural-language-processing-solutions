@@ -101,10 +101,19 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset,
     indices.extend(getNegativeSamples(target, dataset, K))
 
     ### YOUR CODE HERE
-    sampledOutputVectors = np.zeros_like(outputVectors)
-    sampledOutputVectors[indices,:] = outputVectors[indices,:]
-    cost, gradPred, grad = softmaxCostAndGradient(predicted, target, 
-                                                  sampledOutputVectors, dataset)
+    # Initialize cost and grad
+    cost = 0
+    grad = np.zeros_like(outputVectors)
+    gradPred = np.zeros_like(predicted)
+    # Set direction output vectorse
+    direction = [-1]*len(indices)
+    direction[0] = 1
+    for i in range(len(indices)):
+      probs = sigmoid(direction[i]*predicted.dot(outputVectors[indices[i],:].T))
+      cost -= np.log(probs)
+      gradSigmoid = direction[i]*(probs-1)
+      gradPred += gradSigmoid*outputVectors[indices[i],:]
+      grad[indices[i],:] += gradSigmoid*predicted
     ### END YOUR CODE
 
     return cost, gradPred, grad
