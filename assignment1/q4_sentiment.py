@@ -86,10 +86,12 @@ def chooseBestModel(results):
     Returns:
     Your chosen result dictionary.
     """
-    bestResult = None
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    acc = []
+    for i in range(len(results)):
+        acc.append(results[i]['dev'])
+    bestResult = results[np.argmax(acc)]
     ### END YOUR CODE
 
     return bestResult
