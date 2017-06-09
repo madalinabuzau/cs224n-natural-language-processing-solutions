@@ -31,7 +31,7 @@ def softmax(x):
     if len(x.shape) > 1:
         # Matrix
         ### YOUR CODE HERE
-        x = (x.T-np.max(x,axis=1)).T
+        x = x-np.max(x,axis=1)[:,None]
         x = np.exp(x)/np.sum(np.exp(x),axis=1)[:,None]
         ### END YOUR CODE
     else:
