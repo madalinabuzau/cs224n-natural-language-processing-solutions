@@ -24,9 +24,9 @@ def softmax(x):
     """
 
     ### YOUR CODE HERE
-    x = tf.transpose(tf.transpose(x)-tf.reduce_max(x,axis=1))
-    x = np.exp(x)/np.sum(np.exp(x),axis=1)[:,None]
-    out = tf.exp(x)/tf.reduce_sum(x, axis=1)
+    x = x-tf.expand_dims(tf.reduce_max(x,axis=1),axis=1)
+    exp_x = tf.exp(x)
+    out = exp_x/tf.expand_dims(tf.reduce_sum(exp_x,axis=1),axis=1)
     ### END YOUR CODE
 
     return out
