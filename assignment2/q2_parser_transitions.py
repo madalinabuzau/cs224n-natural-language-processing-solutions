@@ -21,6 +21,9 @@ class PartialParse(object):
         self.sentence = sentence
 
         ### YOUR CODE HERE
+        self.stack = ['ROOT']
+        self.buffer = sentence
+        self.dependencies = []
         ### END YOUR CODE
 
     def parse_step(self, transition):
