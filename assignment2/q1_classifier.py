@@ -45,6 +45,13 @@ class SoftmaxModel(Model):
             self.labels_placeholder
         """
         ### YOUR CODE HERE
+        config = self.config
+        self.input_placeholder = tf.placeholder(shape=(config.batch_size, 
+                                                       config.n_features), 
+                                                dtype=tf.float32)
+        self.labels_placeholder = tf.placeholder(shape=(config.batch_size, 
+                                                        config.n_classes),
+                                                 dtype=tf.int32)
         ### END YOUR CODE
 
     def create_feed_dict(self, inputs_batch, labels_batch=None):
