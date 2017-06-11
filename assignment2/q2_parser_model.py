@@ -58,7 +58,7 @@ class ParserModel(Model):
                                                 shape=(None, self.config.n_features))
         self.labels_placeholder = tf.placeholder(tf.float32, 
                                                  shape=(None, self.config.n_classes))
-        self.dropout_placeholder = tf.placeholder(tf.float32, shape=(1,))
+        self.dropout_placeholder = tf.placeholder(tf.float32)
         ### END YOUR CODE
 
     def create_feed_dict(self, inputs_batch, labels_batch=None, dropout=1):
@@ -112,8 +112,9 @@ class ParserModel(Model):
         """
         ### YOUR CODE HERE
         embeddings = tf.nn.embedding_lookup(self.pretrained_embeddings, 
-                                         self.input_placeholder)
-        embeddings = tf.reshape(embeddings, [-1])
+                                            self.input_placeholder)
+        embeddings = tf.reshape(embeddings, [-1, self.config.n_features*
+                                             self.config.embed_size])
         ### END YOUR CODE
         return embeddings
 
@@ -144,6 +145,22 @@ class ParserModel(Model):
 
         x = self.add_embedding()
         ### YOUR CODE HERE
+        # Input to hidden weights and biases initialization
+        xavier_initializer = xavier_weight_init()
+        W_shape = (self.config.n_features*self.config.embed_size, 
+                   self.config.hidden_size)
+        W = tf.Variable(xavier_initializer(W_shape), name='weights')
+        b1 = tf.Variable(tf.zeros((self.config.hidden_size,)), name='biases')
+        # Hidden layer activations + Dropout layer
+        h = tf.nn.relu(tf.matmul(x, W) + b1)
+        h_drop = tf.nn.dropout(h, self.dropout_placeholder)
+        # Hidden to output layer weights and biases initialization
+        U_shape = (self.config.hidden_size, self.config.n_classes)
+        U = tf.Variable(xavier_initializer(U_shape), name='output_weights')
+        b2 = tf.Variable(tf.zeros((self.config.n_classes, )), 
+                         name='output_biases')
+        # Unnormalized logits
+        pred = tf.matmul(h_drop, U) + b2
         ### END YOUR CODE
         return pred
 
