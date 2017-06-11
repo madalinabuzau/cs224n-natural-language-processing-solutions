@@ -20,9 +20,9 @@ class Config(object):
     n_classes = 3
     dropout = 0.5
     embed_size = 50
-    hidden_size = 200
+    hidden_size = 400
     batch_size = 2048
-    n_epochs = 10
+    n_epochs = 20
     lr = 0.001
 
 
@@ -178,6 +178,9 @@ class ParserModel(Model):
             loss: A 0-d tensor (scalar)
         """
         ### YOUR CODE HERE
+        loss = tf.reduce_mean(
+               tf.nn.softmax_cross_entropy_with_logits(labels=self.labels_placeholder,
+                                                       logits=pred))
         ### END YOUR CODE
         return loss
 
@@ -201,6 +204,7 @@ class ParserModel(Model):
             train_op: The Op for training.
         """
         ### YOUR CODE HERE
+        train_op = tf.train.AdamOptimizer().minimize(loss)
         ### END YOUR CODE
         return train_op
 
@@ -239,7 +243,7 @@ class ParserModel(Model):
         self.build()
 
 
-def main(debug=True):
+def main(debug=False):
     print 80 * "="
     print "INITIALIZING"
     print 80 * "="
