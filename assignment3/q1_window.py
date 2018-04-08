@@ -37,7 +37,7 @@ class Config:
     n_word_features = 2 # Number of features for every word in the input.
     window_size = 1 # The size of the window to use.
     ### YOUR CODE HERE
-    n_window_features = 0 # The total number of features used for each window.
+    n_window_features = n_word_features*(window_size*2+1) # The total number of features used for each window.
     ### END YOUR CODE
     n_classes = 5
     dropout = 0.5
@@ -97,7 +97,17 @@ def make_windowed_data(data, start, end, window_size = 1):
     windowed_data = []
     for sentence, labels in data:
 		### YOUR CODE HERE (5-20 lines)
-
+        # Add start and end tokens
+        sentence = [start]*window_size + sentence + [end]*window_size
+        # Compute total window size
+        total_window_size = 2*window_size+1
+        # Create a window data point for each word
+        for i in range(len(labels)):
+            window = sentence[i:i+total_window_size]
+            # Flatten nested list
+            window = [x for word in window for x in word]
+            label = labels[i]
+            windowed_data.append((window, label))
 		### END YOUR CODE
     return windowed_data
 
