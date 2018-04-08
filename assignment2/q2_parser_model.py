@@ -1,13 +1,11 @@
+import cPickle
 import os
 import time
 import tensorflow as tf
-import cPickle
 
 from model import Model
 from q2_initialization import xavier_weight_init
-from utils.general_utils import Progbar
 from utils.parser_utils import minibatches, load_and_preprocess_data
-
 
 class Config(object):
     """Holds model hyperparams and data information.
@@ -54,9 +52,9 @@ class ParserModel(Model):
         (Don't change the variable names)
         """
         ### YOUR CODE HERE
-        self.input_placeholder = tf.placeholder(tf.int32, 
+        self.input_placeholder = tf.placeholder(tf.int32,
                                                 shape=(None, self.config.n_features))
-        self.labels_placeholder = tf.placeholder(tf.float32, 
+        self.labels_placeholder = tf.placeholder(tf.float32,
                                                  shape=(None, self.config.n_classes))
         self.dropout_placeholder = tf.placeholder(tf.float32)
         ### END YOUR CODE
@@ -111,7 +109,7 @@ class ParserModel(Model):
             embeddings: tf.Tensor of shape (None, n_features*embed_size)
         """
         ### YOUR CODE HERE
-        embeddings = tf.nn.embedding_lookup(self.pretrained_embeddings, 
+        embeddings = tf.nn.embedding_lookup(self.pretrained_embeddings,
                                             self.input_placeholder)
         embeddings = tf.reshape(embeddings, [-1, self.config.n_features*
                                              self.config.embed_size])
@@ -131,12 +129,7 @@ class ParserModel(Model):
         Use the initializer from q2_initialization.py to initialize W and U (you can initialize b1
         and b2 with zeros)
 
-        Hint: Here are the dimensions of the various variables you will need to create
-                    W:  (n_features*embed_size, hidden_size)
-                    b1: (hidden_size,)
-                    U:  (hidden_size, n_classes)
-                    b2: (n_classes)
-        Hint: Note that tf.nn.dropout takes the keep probability (1 - p_drop) as an argument. 
+        Hint: Note that tf.nn.dropout takes the keep probability (1 - p_drop) as an argument.
             The keep probability should be set to the value of self.dropout_placeholder
 
         Returns:
@@ -147,7 +140,7 @@ class ParserModel(Model):
         ### YOUR CODE HERE
         # Input to hidden weights and biases initialization
         xavier_initializer = xavier_weight_init()
-        W_shape = (self.config.n_features*self.config.embed_size, 
+        W_shape = (self.config.n_features*self.config.embed_size,
                    self.config.hidden_size)
         W = tf.Variable(xavier_initializer(W_shape), name='weights')
         b1 = tf.Variable(tf.zeros((self.config.hidden_size,)), name='biases')
@@ -157,7 +150,7 @@ class ParserModel(Model):
         # Hidden to output layer weights and biases initialization
         U_shape = (self.config.hidden_size, self.config.n_classes)
         U = tf.Variable(xavier_initializer(U_shape), name='output_weights')
-        b2 = tf.Variable(tf.zeros((self.config.n_classes, )), 
+        b2 = tf.Variable(tf.zeros((self.config.n_classes, )),
                          name='output_biases')
         # Unnormalized logits
         pred = tf.matmul(h_drop, U) + b2
@@ -191,7 +184,7 @@ class ParserModel(Model):
         The Op returned by this function is what must be passed to the
         `sess.run()` call to cause the model to train. See
 
-        https://www.tensorflow.org/versions/r0.7/api_docs/python/train.html#Optimizer
+        https://www.tensorflow.org/api_docs/python/tf/train/Optimizer
 
         for more information.
 
@@ -215,10 +208,11 @@ class ParserModel(Model):
         return loss
 
     def run_epoch(self, sess, parser, train_examples, dev_set):
-        prog = Progbar(target=1 + len(train_examples) / self.config.batch_size)
+        n_minibatches = 1 + len(train_examples) / self.config.batch_size
+        prog = tf.keras.utils.Progbar(target=n_minibatches)
         for i, (train_x, train_y) in enumerate(minibatches(train_examples, self.config.batch_size)):
             loss = self.train_on_batch(sess, train_x, train_y)
-            prog.update(i + 1, [("train loss", loss)])
+            prog.update(i + 1, [("train loss", loss)], force=i + 1 == n_minibatches)
 
         print "Evaluating on dev set",
         dev_UAS, _ = parser.parse(dev_set)
@@ -243,7 +237,7 @@ class ParserModel(Model):
         self.build()
 
 
-def main(debug=False):
+def main(debug=True):
     print 80 * "="
     print "INITIALIZING"
     print 80 * "="
@@ -252,43 +246,39 @@ def main(debug=False):
     if not os.path.exists('./data/weights/'):
         os.makedirs('./data/weights/')
 
-    with tf.Graph().as_default():
+    with tf.Graph().as_default() as graph:
         print "Building model...",
         start = time.time()
         model = ParserModel(config, embeddings)
         parser.model = model
-        print "took {:.2f} seconds\n".format(time.time() - start)
-
-        init = tf.global_variables_initializer()
-        # If you are using an old version of TensorFlow, you may have to use
-        # this initializer instead.
-        # init = tf.initialize_all_variables()
+        init_op = tf.global_variables_initializer()
         saver = None if debug else tf.train.Saver()
+        print "took {:.2f} seconds\n".format(time.time() - start)
+    graph.finalize()
 
-        with tf.Session() as session:
-            parser.session = session
-            session.run(init)
+    with tf.Session(graph=graph) as session:
+        parser.session = session
+        session.run(init_op)
 
+        print 80 * "="
+        print "TRAINING"
+        print 80 * "="
+        model.fit(session, saver, parser, train_examples, dev_set)
+
+        if not debug:
             print 80 * "="
-            print "TRAINING"
+            print "TESTING"
             print 80 * "="
-            model.fit(session, saver, parser, train_examples, dev_set)
+            print "Restoring the best model weights found on the dev set"
+            saver.restore(session, './data/weights/parser.weights')
+            print "Final evaluation on test set",
+            UAS, dependencies = parser.parse(test_set)
+            print "- test UAS: {:.2f}".format(UAS * 100.0)
+            print "Writing predictions"
+            with open('q2_test.predicted.pkl', 'w') as f:
+                cPickle.dump(dependencies, f, -1)
+            print "Done!"
 
-            if not debug:
-                print 80 * "="
-                print "TESTING"
-                print 80 * "="
-                print "Restoring the best model weights found on the dev set"
-                saver.restore(session, './data/weights/parser.weights')
-                print "Final evaluation on test set",
-                UAS, dependencies = parser.parse(test_set)
-                print "- test UAS: {:.2f}".format(UAS * 100.0)
-                print "Writing predictions"
-                with open('q2_test.predicted.pkl', 'w') as f:
-                    cPickle.dump(dependencies, f, -1)
-                print "Done!"
 
 if __name__ == '__main__':
     main()
-
-

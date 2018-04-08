@@ -24,8 +24,15 @@ def gradcheck_naive(f, x):
     while not it.finished:
         ix = it.multi_index
 
-        # Try modifying x[ix] with h defined above to compute
-        # numerical gradients. Make sure you call random.setstate(rndstate)
+        # Try modifying x[ix] with h defined above to compute numerical
+        # gradients (numgrad).
+
+        # Use the centered difference of the gradient.
+        # It has smaller asymptotic error than forward / backward difference
+        # methods. If you are curious, check out here:
+        # https://math.stackexchange.com/questions/2326181/when-to-use-forward-or-central-difference-approximations
+
+        # Make sure you call random.setstate(rndstate)
         # before calling f(x) each time. This will make it possible
         # to test cost functions with built in randomness later.
 

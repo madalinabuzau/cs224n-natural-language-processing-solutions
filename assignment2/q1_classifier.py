@@ -46,10 +46,10 @@ class SoftmaxModel(Model):
         """
         ### YOUR CODE HERE
         config = self.config
-        self.input_placeholder = tf.placeholder(shape=(config.batch_size, 
-                                                       config.n_features), 
+        self.input_placeholder = tf.placeholder(shape=(config.batch_size,
+                                                       config.n_features),
                                                 dtype=tf.float32)
-        self.labels_placeholder = tf.placeholder(shape=(config.batch_size, 
+        self.labels_placeholder = tf.placeholder(shape=(config.batch_size,
                                                         config.n_classes),
                                                  dtype=tf.int32)
         ### END YOUR CODE
@@ -75,7 +75,7 @@ class SoftmaxModel(Model):
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
         ### YOUR CODE HERE
-        feed_dict = {self.input_placeholder: inputs_batch, 
+        feed_dict = {self.input_placeholder: inputs_batch,
                          self.labels_placeholder: labels_batch}
         ### END YOUR CODE
         return feed_dict
@@ -206,22 +206,23 @@ def test_softmax_model():
 
     # Tell TensorFlow that the model will be built into the default Graph.
     # (not required but good practice)
-    with tf.Graph().as_default():
-        # Build the model and add the variable initializer Op
+    with tf.Graph().as_default() as graph:
+        # Build the model and add the variable initializer op
         model = SoftmaxModel(config)
-        init = tf.global_variables_initializer()
-        # If you are using an old version of TensorFlow, you may have to use
-        # this initializer instead.
-        # init = tf.initialize_all_variables()
+        init_op = tf.global_variables_initializer()
+    # Finalizing the graph causes tensorflow to raise an exception if you try to modify the graph
+    # further. This is good practice because it makes explicit the distinction between building and
+    # running the graph.
+    graph.finalize()
 
-        # Create a session for running Ops in the Graph
-        with tf.Session() as sess:
-            # Run the Op to initialize the variables.
-            sess.run(init)
-            # Fit the model
-            losses = model.fit(sess, inputs, labels)
+    # Create a session for running ops in the graph
+    with tf.Session(graph=graph) as sess:
+        # Run the op to initialize the variables.
+        sess.run(init_op)
+        # Fit the model
+        losses = model.fit(sess, inputs, labels)
 
-    # If Ops are implemented correctly, the average loss should fall close to zero
+    # If ops are implemented correctly, the average loss should fall close to zero
     # rapidly.
     assert losses[-1] < .5
     print "Basic (non-exhaustive) classifier tests pass"
