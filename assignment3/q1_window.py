@@ -100,7 +100,7 @@ def make_windowed_data(data, start, end, window_size = 1):
         # Add start and end tokens
         sentence = [start]*window_size + sentence + [end]*window_size
         # Compute total window size
-        total_window_size = 2*window_size+1
+        total_window_size = 2*window_size + 1
         # Create a window data point for each word
         for i in range(len(labels)):
             window = sentence[i:i+total_window_size]
@@ -140,7 +140,9 @@ class WindowModel(NERModel):
         (Don't change the variable names)
         """
         ### YOUR CODE HERE (~3-5 lines)
-
+        self.input_placeholder = tf.placeholder(tf.int32, shape=(None, self.config.n_window_features))
+        self.labels_placeholder = tf.placeholder(tf.int32, shape=(None,))
+        self.dropout_placeholder = tf.placeholder(tf.float32, shape=(1,))
         ### END YOUR CODE
 
     def create_feed_dict(self, inputs_batch, labels_batch=None, dropout=1):
@@ -163,8 +165,13 @@ class WindowModel(NERModel):
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
         ### YOUR CODE HERE (~5-10 lines)
-         
-        ### END YOUR CODE
+        feed_dict = {}
+        if inputs_batch:
+            feed_dict[self.input_placeholder] = inputs_batch 
+        if labels_batch:
+            feed_dict[self.labels_placeholder] = labels_batch 
+        if dropout:           
+            feed_dict[self.dropout] = dropout 
         return feed_dict
 
     def add_embedding(self):
@@ -184,9 +191,10 @@ class WindowModel(NERModel):
             embeddings: tf.Tensor of shape (None, n_window_features*embed_size)
         """
         ### YOUR CODE HERE (!3-5 lines)
-                                                             
-                                  
-                                                                                                                 
+        word_embeddings = tf.constant(self.pretrained_embeddings)
+        embeddings = tf.nn.embedding_lookup(word_embeddings, self.input_placeholder)
+        embeddings = tf.reshape(embeddings, [-1, self.config.n_window_features * 
+                                             self.config.embed_size])
         ### END YOUR CODE
         return embeddings
 
@@ -217,7 +225,10 @@ class WindowModel(NERModel):
         x = self.add_embedding()
         dropout_rate = self.dropout_placeholder
         ### YOUR CODE HERE (~10-20 lines)
-
+        initializer = tf.contrib.layers.xavier_initializer()
+        h = tf.layers.dense(self.config.hidden_size, activation=tf.nn.relu)(x)
+        h_drop = tf.layers.dropout(dropout_rate)(h)
+        pred = tf.layers.dense(self.config.n_classes, kernel_initializer=initializer)(h_drop)
         ### END YOUR CODE
         return pred
 
