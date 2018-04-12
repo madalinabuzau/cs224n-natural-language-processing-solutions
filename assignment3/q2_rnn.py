@@ -103,7 +103,17 @@ def pad_sequences(data, max_length):
 
     for sentence, labels in data:
         ### YOUR CODE HERE (~4-6 lines)
-        pass
+        len_sentence = len(sentence)
+        len_diff = max_length-len_sentence
+        if len_diff>0:
+            sentence = sentence + [zero_vector]*len_diff
+            labels = labels + zero_label*len_diff
+            mask = [True]*len_sentence + [False]*len_diff
+        else:
+            sentence = sentence[:max_length+1]
+            labels = labels[:max_length+1]
+            mask = [True]*max_length
+        ret.append((sentence, labels, mask))
         ### END YOUR CODE ###
     return ret
 
@@ -141,6 +151,11 @@ class RNNModel(NERModel):
         (Don't change the variable names)
         """
         ### YOUR CODE HERE (~4-6 lines)
+        self.input_placeholder = tf.placeholder(shape=(None, self.max_length, 
+                                                 self.config.n_features), dtype=tf.int32)
+        self.labels_placeholder = tf.placeholder(shape=(None, self.max_length), dtype=tf.int32)
+        self.mask_placeholder = tf.placeholder(shape=(None, self.max_length), dtype=tf.bool)
+        self.dropout_placeholder = tf.placeholder(dtype=tf.float32)
         ### END YOUR CODE
 
     def create_feed_dict(self, inputs_batch, mask_batch, labels_batch=None, dropout=1):
@@ -166,6 +181,15 @@ class RNNModel(NERModel):
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
         ### YOUR CODE (~6-10 lines)
+        feed_dict = {}
+        if inputs_batch is not None:
+            feed_dict[self.input_placeholder] = inputs_batch
+        if labels_batch is not None:
+            feed_dict[self.labels_placeholder] = labels_batch
+        if mask_batch is not None:
+            feed_dict[self.mask_placeholder] = mask_batch
+        if dropout is not None:
+            feed_dict[self.dropout_placeholder] = dropout
         ### END YOUR CODE
         return feed_dict
 
@@ -190,7 +214,11 @@ class RNNModel(NERModel):
             embeddings: tf.Tensor of shape (None, max_length, n_features*embed_size)
         """
         ### YOUR CODE HERE (~4-6 lines)
+        word_embeddings = tf.constant(self.pretrained_embeddings)
+        embeddings = tf.nn.embedding_lookup(word_embeddings, self.input_placeholder)
+        embeddings = tf.reshape(embeddings, [-1, self.config.n_features * self.config.embed_size])
         ### END YOUR CODE
+        
         return embeddings
 
     def add_prediction_op(self):
@@ -251,6 +279,7 @@ class RNNModel(NERModel):
         # Define U and b2 as variables.
         # Initialize state as vector of zeros.
         ### YOUR CODE HERE (~4-6 lines)
+        
         ### END YOUR CODE
 
         with tf.variable_scope("RNN"):
