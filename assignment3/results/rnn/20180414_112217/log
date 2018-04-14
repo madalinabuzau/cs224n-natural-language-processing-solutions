@@ -1,0 +1,30 @@
+2018-04-14 11:22:20,002:INFO: Building model...
+2018-04-14 11:22:20,274:WARNING: From /home/mada/anaconda3/envs/py27/lib/python2.7/site-packages/tensorflow/contrib/learn/python/learn/datasets/base.py:198: retry (from tensorflow.contrib.learn.python.learn.datasets.base) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use the retry module or similar alternatives.
+2018-04-14 11:22:23,897:INFO: took 3.89 seconds
+2018-04-14 11:22:25,362:INFO: Epoch 1 out of 10
+2018-04-14 11:22:35,052:INFO: Evaluating on development data
+2018-04-14 11:23:10,671:DEBUG: Token-level confusion matrix:
+go\gu   	PER     	ORG     	LOC     	MISC    	O       
+PER     	2781.00 	120.00  	99.00   	12.00   	137.00  
+ORG     	420.00  	962.00  	378.00  	112.00  	220.00  
+LOC     	107.00  	192.00  	1584.00 	93.00   	118.00  
+MISC    	108.00  	185.00  	190.00  	614.00  	171.00  
+O       	144.00  	99.00   	92.00   	32.00   	42392.00
+
+2018-04-14 11:23:10,672:DEBUG: Token-level scores:
+label	acc  	prec 	rec  	f1   
+PER  	0.98 	0.78 	0.88 	0.83 
+ORG  	0.97 	0.62 	0.46 	0.53 
+LOC  	0.98 	0.68 	0.76 	0.71 
+MISC 	0.98 	0.71 	0.48 	0.58 
+O    	0.98 	0.98 	0.99 	0.99 
+micro	0.98 	0.94 	0.94 	0.94 
+macro	0.98 	0.75 	0.72 	0.73 
+not-O	0.98 	0.71 	0.69 	0.70 
+
+2018-04-14 11:23:10,672:INFO: Entity level P/R/F1: 0.61/0.65/0.63
+2018-04-14 11:23:10,672:INFO: New best score! Saving model in results/rnn/20180414_112217/model.weights
+2018-04-14 11:23:11,057:INFO: Epoch 2 out of 10
+2018-04-14 11:23:18,574:INFO: Evaluating on development data

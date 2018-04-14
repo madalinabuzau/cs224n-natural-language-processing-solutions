@@ -214,7 +214,7 @@ class RNNModel(NERModel):
             embeddings: tf.Tensor of shape (None, max_length, n_features*embed_size)
         """
         ### YOUR CODE HERE (~4-6 lines)
-        word_embeddings = tf.constant(self.pretrained_embeddings)
+        word_embeddings = tf.Variable(self.pretrained_embeddings)
         embeddings = tf.nn.embedding_lookup(word_embeddings, self.input_placeholder)
         embeddings = tf.reshape(embeddings, [-1, self.max_length, Config.n_features*Config.embed_size])
         ### END YOUR CODE
@@ -349,7 +349,7 @@ class RNNModel(NERModel):
             train_op: The Op for training.
         """
         ### YOUR CODE HERE (~1-2 lines)
-        optim = tf.train.AdamOptimizer()
+        optim = tf.train.AdamOptimizer(learning_rate=Config.lr)
         train_op = optim.minimize(loss)
         ### END YOUR CODE
         return train_op
