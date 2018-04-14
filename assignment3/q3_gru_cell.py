@@ -86,8 +86,8 @@ class GRUCell(tf.nn.rnn_cell.RNNCell):
                                   initializer=tf.zeros_initializer())
             z = tf.nn.sigmoid(tf.matmul(inputs, W_z) + tf.matmul(state, U_z) + b_z)
             r = tf.nn.sigmoid(tf.matmul(inputs, W_r) + tf.matmul(state, U_r) + b_r)
-            o = tf.tanh(tf.matmul(inputs, W_o) + tf.matmul(tf.dot(r, state), U_o) + b_o)
-            new_state = tf.dot(z, state) + tf.dot((1-z), o)
+            o = tf.tanh(tf.matmul(inputs, W_o) + tf.matmul(r*state, U_o) + b_o)
+            new_state = z*state + (1-z)*o
             ### END YOUR CODE ###
         # For a GRU, the output and state are the same (N.B. this isn't true
         # for an LSTM, though we aren't using one of those in our
