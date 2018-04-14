@@ -140,7 +140,8 @@ class WindowModel(NERModel):
         (Don't change the variable names)
         """
         ### YOUR CODE HERE (~3-5 lines)
-        self.input_placeholder = tf.placeholder(tf.int32, shape=(None, self.config.n_window_features))
+        self.input_placeholder = tf.placeholder(tf.int32, shape=(None,
+            self.config.n_window_features))
         self.labels_placeholder = tf.placeholder(tf.int32, shape=(None,))
         self.dropout_placeholder = tf.placeholder(tf.float32)
         ### END YOUR CODE
@@ -165,13 +166,11 @@ class WindowModel(NERModel):
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
         ### YOUR CODE HERE (~5-10 lines)
-        feed_dict = {}
-        if inputs_batch is not None:
-            feed_dict[self.input_placeholder] = inputs_batch 
+        feed_dict = {self.input_placeholder: inputs_batch,
+                     self.dropout_placeholder: dropout}
         if labels_batch is not None:
-            feed_dict[self.labels_placeholder] = labels_batch 
-        if dropout is not None:           
-            feed_dict[self.dropout_placeholder] = dropout 
+            feed_dict[self.labels_placeholder] = labels_batch
+        ### END YOUR CODE
         return feed_dict
 
     def add_embedding(self):
@@ -191,9 +190,9 @@ class WindowModel(NERModel):
             embeddings: tf.Tensor of shape (None, n_window_features*embed_size)
         """
         ### YOUR CODE HERE (!3-5 lines)
-        word_embeddings = tf.constant(self.pretrained_embeddings)
+        word_embeddings = tf.Variable(self.pretrained_embeddings)
         embeddings = tf.nn.embedding_lookup(word_embeddings, self.input_placeholder)
-        embeddings = tf.reshape(embeddings, [-1, self.config.n_window_features * 
+        embeddings = tf.reshape(embeddings, [-1, self.config.n_window_features *
                                              self.config.embed_size])
         ### END YOUR CODE
         return embeddings
@@ -229,7 +228,7 @@ class WindowModel(NERModel):
         h = tf.layers.dense(x, self.config.hidden_size, activation=tf.nn.relu,
                             kernel_initializer=initializer)
         h_drop = tf.layers.dropout(h, dropout_rate)
-        pred = tf.layers.dense(h_drop, self.config.n_classes, 
+        pred = tf.layers.dense(h_drop, self.config.n_classes,
                                kernel_initializer=initializer)
         ### END YOUR CODE
         return pred
@@ -248,8 +247,8 @@ class WindowModel(NERModel):
             loss: A 0-d tensor (scalar)
         """
         ### YOUR CODE HERE (~2-5 lines)
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.labels_placeholder,
-                                                              logits=pred)
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
+            labels=self.labels_placeholder, logits=pred)
         loss = tf.reduce_mean(loss)
         ### END YOUR CODE
         return loss
@@ -274,13 +273,14 @@ class WindowModel(NERModel):
             train_op: The Op for training.
         """
         ### YOUR CODE HERE (~1-2 lines)
-        optimizer = tf.train.AdamOptimizer()
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.config.lr)
         train_op = optimizer.minimize(loss)
         ### END YOUR CODE
         return train_op
 
     def preprocess_sequence_data(self, examples):
-        return make_windowed_data(examples, start=self.helper.START, end=self.helper.END, window_size=self.config.window_size)
+        return make_windowed_data(examples, start=self.helper.START, end=self.helper.END,
+                                    window_size=self.config.window_size)
 
     def consolidate_predictions(self, examples_raw, examples, preds):
         """Batch the predictions into groups of sentence length.

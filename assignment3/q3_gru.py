@@ -49,16 +49,15 @@ class SequencePredictor(Model):
         """Generates placeholder variables to represent the input tensors
         NOTE: You do not have to do anything here.
         """
-        self.inputs_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.max_length, 1), name="x")
-        self.labels_placeholder = tf.placeholder(tf.float32, shape=(None, 1), name="y")
+        self.inputs_placeholder = tf.placeholder(tf.float32,
+            shape=(None, self.config.max_length, 1))
+        self.labels_placeholder = tf.placeholder(tf.float32, shape=(None, 1))
 
     def create_feed_dict(self, inputs_batch, labels_batch=None):
         """Creates the feed_dict for the model.
         NOTE: You do not have to do anything here.
         """
-        feed_dict = {
-            self.inputs_placeholder: inputs_batch,
-        }
+        feed_dict = {self.inputs_placeholder: inputs_batch}
         if labels_batch is not None:
             feed_dict[self.labels_placeholder] = labels_batch
         return feed_dict
@@ -143,10 +142,10 @@ class SequencePredictor(Model):
         grads_and_vars = optimizer.compute_gradients(loss)
         gradients, variables = zip(*grads_and_vars)
         if self.config.clip_gradients:
-            gradients, _ = tf.clip_by_global_norm(gradients, 
+            gradients, _ = tf.clip_by_global_norm(gradients,
                                                   clip_norm=self.config.max_grad_norm)
         self.grad_norm = tf.global_norm(gradients)
-        train_op = optimizer.apply_gradients(zip(gradients, variables))       
+        train_op = optimizer.apply_gradients(zip(gradients, variables))
         ### END YOUR CODE
 
         assert self.grad_norm is not None, "grad_norm was not set properly!"
