@@ -1,5 +1,4 @@
 ## Assignment solutions for the CS224n course offered by Stanford on Natural Language Processing with Deep Learning
-----
 
 In this repo you can find my coding solutions for the CS224n course offered by Stanford. I thought it might be helpful for other fellow students to share them here.
 
